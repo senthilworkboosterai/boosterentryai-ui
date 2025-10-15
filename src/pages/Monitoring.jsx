@@ -1,12 +1,8 @@
 export default function Monitoring() {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
-        <h1 className="text-3xl font-bold text-indigo-700 mb-2">
-          Monitoring Page
-        </h1>
-        <p className="text-gray-600 text-center">
-          Track your document processing and AI performance here.
-        </p>
+      <div className="bg-white shadow rounded-lg p-6">
+        <h3 className="text-xl font-semibold text-gray-800 mb-3">Monitoring</h3>
+        <p className="text-gray-600">Track document processing, AI extraction, and status updates.</p>
       </div>
     );
   }

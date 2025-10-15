@@ -1,12 +1,8 @@
 export default function ManualReview() {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
-        <h1 className="text-3xl font-bold text-indigo-700 mb-2">
-          Manual Review Page
-        </h1>
-        <p className="text-gray-600 text-center">
-          This section allows manual verification of extracted data.
-        </p>
+      <div className="bg-white shadow rounded-lg p-6">
+        <h3 className="text-xl font-semibold text-gray-800 mb-3">Manual Review</h3>
+        <p className="text-gray-600">Review and verify AI-extracted data manually if needed.</p>
       </div>
     );
   }
