@@ -3,8 +3,9 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Monitoring from "./pages/Monitoring";
-import ManualReview from "./pages/ManualReview";
+import HumanReview from "./pages/HumanReview";
 import Login from "./pages/Login";
+import FixReview from "./pages/FixReview";
 
 export default function App() {
   return (
@@ -17,10 +18,13 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/monitoring" element={<Monitoring />} />
-        <Route path="/manual-review" element={<ManualReview />} />
+        <Route path="/Human-review" element={<HumanReview />} />
+       
+
       </Route>
 
       {/* Optional login page */}
+      <Route path="/human-review/fix/:id" element={<FixReview />} />
       <Route path="/login" element={<Login />} />
     </Routes>
   );

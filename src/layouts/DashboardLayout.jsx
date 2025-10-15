@@ -9,7 +9,7 @@ export default function DashboardLayout() {
     { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/dashboard" },
     { name: "Upload", icon: <Upload size={18} />, path: "/upload" },
     { name: "Monitoring", icon: <Monitor size={18} />, path: "/monitoring" },
-    { name: "Manual Review", icon: <FileCheck size={18} />, path: "/manual-review" },
+    { name: "Human Review", icon: <FileCheck size={18} />, path: "/human-review" },
   ];
 
   return (
