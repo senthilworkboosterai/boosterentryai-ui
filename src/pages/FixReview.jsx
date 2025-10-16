@@ -1,58 +1,77 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import api from "../api/axios"; // Ensure baseURL = http://127.0.0.1:5050
 
 export default function FixReview() {
   const { id } = useParams();
   const [doc, setDoc] = useState(null);
   const [formData, setFormData] = useState({});
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // 🧩 Load dummy data (for UI testing)
+  // ✅ Load the document and extracted/corrected JSON
   useEffect(() => {
-    setTimeout(() => {
-      setDoc({
-        id,
-        client_name: "UltraTechCement",
-        doc_type: "Invoice",
-        uploaded_on: "Oct 15, 3:40 PM",
-        data_extraction_status: "Completed",
-        erp_entry_status: "Failed",
-        file_name: "UltraTechCement_Invoice_20251016_004946_369267.pdf",
-      });
+    const fetchDoc = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/api/human_review/${id}`);
+        const data = res.data.data;
 
-      setFormData({
-        Branch: "ARAKKONAM",
-        Date: "2025-08-16",
-        ConsignmentNo: "4486",
-        Source: "ARAKKONAM",
-        Destination: "CHENNAI",
-        Vehicle: "TN73Y7849",
-        EWayBillNo: "581862204376",
-        Consignor: "UltraTech Cement Limited",
-        Consignee: "UTCL MADHAVARAM",
-        GSTType: "Unregistered",
-        DeliveryAddress:
-          "NO-378/3, 3RD STREET, THATTANKULAM ROAD, SADN: THANK ROA, TAMIL NADU",
-        InvoiceNo: "6978014751",
-        ContentName: "PPC",
-        ActualWeight: "25.000",
-        EWayBillValidUpto: "2025-08-17T23:59:00",
-        InvoiceDate: "2025-08-16",
-        EWayBillDate: "2025-08-16",
-        GetRate: "437.00",
-        GoodsType: "BAG",
-      });
-    }, 400);
+        setDoc(data.doc);
+
+        // Prefer corrected_data if available
+        const jsonData =
+          data.corrected_data && Object.keys(data.corrected_data).length > 0
+            ? data.corrected_data
+            : data.extracted_data;
+
+        setFormData(jsonData || {});
+        setMessage("");
+      } catch (err) {
+        console.error("❌ Error fetching doc:", err);
+        setMessage("❌ Failed to load document details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoc();
   }, [id]);
 
+  // ✅ Handle input change
   const handleChange = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
-    setMessage("✅ Dummy Save: Data updated locally (API pending).");
+  // ✅ Save corrected data
+  const handleSave = async () => {
+    try {
+      const res = await api.post(`/api/human_review/update_corrected/${id}`, {
+        corrected_json: formData,
+      });
+      setMessage(`✅ ${res.data.message}`);
+    } catch (err) {
+      console.error("❌ Save failed:", err);
+      setMessage("❌ Failed to save changes.");
+    }
   };
 
+  // ✅ Handle UI states
+  if (loading)
+    return (
+      <div className="p-10 text-gray-600 text-center text-lg animate-pulse">
+        Loading document...
+      </div>
+    );
+
+  if (!doc)
+    return (
+      <div className="p-10 text-gray-600 text-center text-lg">
+        No document found.
+      </div>
+    );
+
+  // ✅ Status badge component
   const StatusBadge = ({ label, status }) => {
     let color =
       status === "Completed"
@@ -60,7 +79,6 @@ export default function FixReview() {
         : status === "Failed"
         ? "bg-red-100 text-red-700"
         : "bg-yellow-100 text-yellow-700";
-
     return (
       <span
         className={`px-3 py-1 rounded text-sm font-medium ${color} border border-gray-200`}
@@ -70,23 +88,16 @@ export default function FixReview() {
     );
   };
 
-  if (!doc)
-    return (
-      <div className="p-8 text-gray-600 text-center text-lg">
-        Loading document...
-      </div>
-    );
-
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      {/* --- Document Summary Header --- */}
+      {/* HEADER */}
       <div className="bg-white shadow rounded-xl p-5 mb-6 flex flex-wrap items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-indigo-700 mb-2">
-            {doc.client_name} – {doc.doc_type}
+            {doc.client_name || "Unknown Client"} – {doc.doc_type || "Document"}
           </h2>
           <p className="text-sm text-gray-600">
-            <strong>Uploaded On:</strong> {doc.uploaded_on}
+            <strong>Uploaded On:</strong> {doc.uploaded_on || "—"}
           </p>
         </div>
 
@@ -96,21 +107,28 @@ export default function FixReview() {
         </div>
       </div>
 
-      {/* --- Main Split Layout --- */}
+      {/* BODY */}
       <div className="flex flex-col md:flex-row gap-6">
-        {/* LEFT: PDF Viewer */}
+        {/* LEFT SIDE - PDF Viewer */}
         <div className="w-full md:w-1/2 bg-white shadow-lg rounded-xl p-4">
           <h3 className="text-indigo-700 font-semibold text-lg mb-3">
             Document Preview
           </h3>
-          <iframe
-            src={`http://127.0.0.1:5050/uploaded_docs/${doc.file_name}`}
-            className="w-full h-[80vh] border rounded-lg"
-            title="PDF Preview"
-          ></iframe>
+
+          {doc.file_url ? (
+            <iframe
+              src={doc.file_url}
+              className="w-full h-[80vh] border rounded-lg"
+              title="PDF Preview"
+            ></iframe>
+          ) : (
+            <p className="text-sm text-gray-500 text-center italic">
+              PDF not available.
+            </p>
+          )}
         </div>
 
-        {/* RIGHT: Extracted Data */}
+        {/* RIGHT SIDE - JSON Editor */}
         <div className="w-full md:w-1/2 bg-white shadow-lg rounded-xl p-6 overflow-y-auto">
           <h3 className="text-indigo-700 font-semibold text-lg mb-4">
             Extracted Data (Editable)

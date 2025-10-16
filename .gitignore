@@ -1,29 +1,24 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Logs
+logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Environment
-.env
-venv/
-.env.local
-.env.production
+node_modules
+dist
+dist-ssr
+*.local
 
-# Node / React
-node_modules/
-dist/
-build/
-
-# Uploads
-uploads/
-uploaded_docs/
-
-# System
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-*.swp
-
-# Docker
-*.pid
-*.sock
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
