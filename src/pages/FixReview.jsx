@@ -110,23 +110,18 @@ export default function FixReview() {
       {/* BODY */}
       <div className="flex flex-col md:flex-row gap-6">
         {/* LEFT SIDE - PDF Viewer */}
-        <div className="w-full md:w-1/2 bg-white shadow-lg rounded-xl p-4">
-          <h3 className="text-indigo-700 font-semibold text-lg mb-3">
-            Document Preview
-          </h3>
+       <div className="relative w-full h-[90vh] bg-gray-100 rounded-xl shadow-inner overflow-hidden">
+  <iframe
+    src={doc.file_url}
+    title="PDF Preview"
+    className="absolute inset-0 w-full h-full border-none rounded-xl"
+    style={{
+      backgroundColor: "#fff",
+      boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+    }}
+  />
+</div>
 
-          {doc.file_url ? (
-            <iframe
-              src={doc.file_url}
-              className="w-full h-[80vh] border rounded-lg"
-              title="PDF Preview"
-            ></iframe>
-          ) : (
-            <p className="text-sm text-gray-500 text-center italic">
-              PDF not available.
-            </p>
-          )}
-        </div>
 
         {/* RIGHT SIDE - JSON Editor */}
         <div className="w-full md:w-1/2 bg-white shadow-lg rounded-xl p-6 overflow-y-auto">

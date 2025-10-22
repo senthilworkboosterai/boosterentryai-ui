@@ -275,15 +275,34 @@ export default function Monitoring() {
                 <tr key={doc.id} className="hover:bg-gray-50">
                   <td className="p-3 border-b">{index + 1}</td>
                   <td className="p-3 border-b">{doc.client_name}</td>
-                  <td className="p-3 border-b text-indigo-600 underline cursor-pointer">
-                    <a
-                      href={`http://127.0.0.1:5050/uploaded_docs/${doc.file_name}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {doc.doc_type}
-                    </a>
-                  </td>
+                
+<td className="p-3 border-b text-indigo-600 underline cursor-pointer">
+  <a
+    href={`${window.location.origin}/invoice/${doc.id}`}
+    onClick={(e) => {
+      e.preventDefault();
+    console.log("📂 File URL:",`${window.location.origin}/invoice/${doc.id}`);
+
+      // ✅ Open invoice page in a new standalone full window (like human review)
+      const id = doc.id || doc.doc_id;
+      const width = 1300;
+      const height = 900;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
+
+      window.open(
+        `${window.location.origin}/invoice/${id}`,
+        "_blank",
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
+      );
+    }}
+  >
+    {doc.doc_type}
+  </a>
+</td>
+
+
+
                   <td className="p-3 border-b">{formatDateTime(doc.uploaded_on)}</td>
                   <td className="p-3 border-b">
                     <StatusBadge status={doc.data_extraction_status} />

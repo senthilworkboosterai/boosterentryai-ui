@@ -2,6 +2,9 @@ from flask import Blueprint, request, jsonify
 from config.db_config import get_connection, release_connection
 import os
 import datetime
+from werkzeug.utils import secure_filename
+from PIL import Image
+import io
 
 upload_bp = Blueprint('upload_bp', __name__)
 
@@ -12,7 +15,7 @@ print(f"📂 Upload folder is set to: {UPLOAD_FOLDER}")
 
 
 # ========================================
-# 1️⃣ Get all clients
+#1️⃣ Get all clients
 # ========================================
 @upload_bp.route("/api/clients", methods=["GET"])
 def get_clients():
@@ -104,35 +107,77 @@ def upload_files():
         doc_type = doc_type.replace(" ", "_")
         doc_format_name = doc_format_name.replace(" ", "_")
 
-        # --- Remove client prefix if present in format name ---
+        # Remove client prefix if present in format name
         if doc_format_name.lower().startswith(client_name.lower()):
             doc_format_name = doc_format_name[len(client_name):].lstrip("_")
 
+        # allowed image extensions
+        IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
+
         # --- Handle file uploads ---
         files = request.files.getlist("files")
+
+        # DEBUG: print how many files arrived and each filename/mimetype
+        print("DEBUG: files received count =", len(files))
+        for f in files:
+            print(" -", getattr(f, "filename", None), getattr(f, "mimetype", None))
+
         if not files:
             return jsonify({"status": "error", "message": "No files uploaded"}), 400
 
         uploaded_records = []
 
         for file in files:
-            safe_filename = file.filename.replace(" ", "_")
-            file_ext = os.path.splitext(safe_filename)[1] or ".pdf"
+            orig_name = secure_filename(file.filename or "uploaded_file")
+            base, ext = os.path.splitext(orig_name)
+            ext = ext.lower()
 
-            # ✅ Add microsecond to make each filename unique
+            # build unique name parts
             now = datetime.datetime.now()
             date_str = now.strftime("%Y%m%d")
             time_str = now.strftime("%H%M%S_%f")  # microsecond precision
 
-            # ✅ Final naming format
-            filename = f"{client_name}_{doc_type}_{date_str}_{time_str}{file_ext}"
-            file_path = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(file_path)
+            # target doc filename prefix
+            prefix = f"{client_name}_{doc_type}_{date_str}_{time_str}"
 
-            uploaded_records.append({
-                "file_name": filename,
-                "saved_path": os.path.abspath(file_path)
-            })
+            # If incoming file is an image -> convert to PDF and save with .pdf ext
+            if ext in IMAGE_EXTS or (hasattr(file, "mimetype") and file.mimetype.startswith("image/")):
+                try:
+                    file.stream.seek(0)
+                    img = Image.open(file.stream)
+
+                    # Convert to RGB if needed (PDF requires RGB)
+                    if img.mode in ("RGBA", "P", "LA") or img.mode != "RGB":
+                        img = img.convert("RGB")
+
+                    filename_pdf = f"{prefix}.pdf"
+                    file_path = os.path.join(UPLOAD_FOLDER, filename_pdf)
+
+                    # Save image as single-page PDF
+                    img.save(file_path, "PDF", resolution=100.0)
+
+                    uploaded_records.append({
+                        "file_name": filename_pdf,
+                        "saved_path": os.path.abspath(file_path)
+                    })
+                except Exception as img_err:
+                    print(f"❌ Image conversion failed for {orig_name}: {img_err}")
+                    # skip this file and continue with others
+                    continue
+
+            else:
+                # Treat as PDF (or save as-is)
+                filename = f"{prefix}{ext if ext else '.pdf'}"
+                file_path = os.path.join(UPLOAD_FOLDER, filename)
+                try:
+                    file.save(file_path)
+                    uploaded_records.append({
+                        "file_name": filename,
+                        "saved_path": os.path.abspath(file_path)
+                    })
+                except Exception as save_err:
+                    print(f"❌ Saving failed for {orig_name}: {save_err}")
+                    continue
 
         print(f"✅ Uploaded {len(uploaded_records)} file(s) to {UPLOAD_FOLDER}/")
 

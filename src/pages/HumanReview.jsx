@@ -11,7 +11,9 @@ export default function HumanReview() {
   const [toDate, setToDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
+  // ✅ Load data
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
     setFromDate(today);
@@ -77,39 +79,33 @@ export default function HumanReview() {
     else if (status?.toLowerCase().includes("not started"))
       colorClass = "bg-gray-100 text-gray-600";
 
-    return <span className={`px-3 py-1 rounded text-sm font-medium ${colorClass}`}>{status}</span>;
+    return (
+      <span className={`px-3 py-1 rounded text-sm font-medium ${colorClass}`}>
+        {status}
+      </span>
+    );
   };
 
-    
-    const navigate = useNavigate();
-    
-    const handleFix = (doc) => {
-      if (!doc?.id) {
-        console.error("❌ Invalid document data:", doc);
-        return;
-      }
-    
-      // Construct the URL for the fix page
-      const url = `/human-review/fix/${doc.id}`;
-    
-      // Open in a new centered popup window
-      const width = 1300;
-      const height = 900;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-    
-      window.open(
-        url,
-        "_blank",
-        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
-      );
-    };
-    
-  
+  // ✅ Fix button — opens full new browser window (like screenshot #1)
+  const handleFix = (doc) => {
+    if (!doc?.id && !doc?.doc_id) {
+      console.error("❌ Invalid document data:", doc);
+      return;
+    }
+
+    const docId = doc.id ?? doc.doc_id;
+    const url = `${window.location.origin}/human-review/fix/${docId}`;
+
+
+    // Open in full browser window (not just a popup)
+    window.open(url, "_blank");
+  };
+
   const handleQuickFilter = (value) => {
     setQuickFilter(value);
     const today = new Date();
-    let from = "", to = "";
+    let from = "",
+      to = "";
     switch (value) {
       case "today":
         from = to = today.toISOString().split("T")[0];
@@ -134,6 +130,7 @@ export default function HumanReview() {
         Human Review Dashboard
       </h2>
 
+      {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6 items-end">
         <div>
           <label className="block text-sm font-medium mb-1">Quick Filter</label>
@@ -176,7 +173,9 @@ export default function HumanReview() {
           >
             <option value="">All Clients</option>
             {clients.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
         </div>
@@ -190,6 +189,7 @@ export default function HumanReview() {
         message && <p className="mb-4 text-sm text-gray-700">{message}</p>
       )}
 
+      {/* Table */}
       <div className="overflow-x-auto bg-white shadow rounded-lg">
         <table className="min-w-full border-collapse">
           <thead>
@@ -203,30 +203,34 @@ export default function HumanReview() {
               <th className="p-3 border-b">Action</th>
             </tr>
           </thead>
+
           <tbody>
             {docs.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center p-4 text-gray-500 italic">
+                <td
+                  colSpan="7"
+                  className="text-center p-4 text-gray-500 italic"
+                >
                   No documents require human review
                 </td>
               </tr>
             ) : (
               docs.map((doc, index) => (
-                <tr key={doc.id} className="hover:bg-gray-50">
+                <tr key={doc.id ?? doc.doc_id} className="hover:bg-gray-50">
                   <td className="p-3 border-b">{index + 1}</td>
                   <td className="p-3 border-b">{doc.client_name}</td>
-                  <td className="p-3 border-b text-indigo-600 underline cursor-pointer">
-                    <a
-                      href={`http://127.0.0.1:5050/uploaded_docs/${doc.file_name}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {doc.doc_type}
-                    </a>
+                  <td className="p-3 border-b text-indigo-600 underline">
+                    {doc.doc_type}
                   </td>
-                  <td className="p-3 border-b">{formatDateTime(doc.uploaded_on)}</td>
-                  <td className="p-3 border-b"><StatusBadge status={doc.data_extraction_status} /></td>
-                  <td className="p-3 border-b"><StatusBadge status={doc.erp_entry_status} /></td>
+                  <td className="p-3 border-b">
+                    {formatDateTime(doc.uploaded_on)}
+                  </td>
+                  <td className="p-3 border-b">
+                    <StatusBadge status={doc.data_extraction_status} />
+                  </td>
+                  <td className="p-3 border-b">
+                    <StatusBadge status={doc.erp_entry_status} />
+                  </td>
                   <td className="p-3 border-b">
                     <button
                       onClick={() => handleFix(doc)}
@@ -244,3 +248,4 @@ export default function HumanReview() {
     </div>
   );
 }
+

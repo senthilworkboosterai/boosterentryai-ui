@@ -13,6 +13,19 @@ export default function Upload() {
 
   const dropRef = useRef(null);
 
+  const ALLOWED_TYPES = [
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+  "image/bmp",
+  "image/tiff"
+];
+
+const isAllowedFile = (file) => ALLOWED_TYPES.includes(file.type);
+
+
   // ✅ Fetch clients on mount
   useEffect(() => {
     async function fetchClients() {
@@ -69,35 +82,52 @@ export default function Upload() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // ✅ Handle upload
   const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!selectedClient || !selectedFormat || files.length === 0) {
-      setMessage("⚠️ Please select client, format, and at least one file.");
-      return;
+  e.preventDefault();
+  if (!selectedClient || !selectedFormat || files.length === 0) {
+    setMessage("⚠️ Please select client, format, and at least one file.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("client_id", selectedClient);
+  formData.append("doc_format_id", selectedFormat);
+  formData.append("uploaded_by", "senthil");
+  files.forEach((file) => formData.append("files", file));
+
+  try {
+    setUploading(true);
+    setMessage("⏳ Uploading files...");
+
+    // debug: log file names and formData entries
+    console.log("Uploading files:", files.map(f => f.name));
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1] instanceof File ? pair[1].name : pair[1]);
     }
 
-    const formData = new FormData();
-    formData.append("client_id", selectedClient);
-    formData.append("doc_format_id", selectedFormat);
-    formData.append("uploaded_by", "senthil");
-    files.forEach((file) => formData.append("files", file));
+    // IMPORTANT: do NOT set the Content-Type header manually — let axios set it with the boundary
+    const res = await api.post("/api/upload", formData);
 
-    try {
-      setUploading(true);
-      setMessage("⏳ Uploading files...");
-      const res = await api.post("/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setMessage(`✅ ${res.data.message}`);
-      setFiles([]);
-    } catch (err) {
-      console.error("❌ Upload failed:", err);
-      setMessage("❌ Upload failed. Check console for details.");
-    } finally {
-      setUploading(false);
+    if (res.data && res.data.status === "success") {
+      const saved = res.data.data || [];
+      if (saved.length > 0) {
+        const names = saved.map((s) => s.file_name).join(", ");
+        setMessage(`✅ Uploaded: ${names}`);
+      } else {
+        setMessage(`✅ ${res.data.message || "Upload succeeded."}`);
+      }
+      setFiles([]); // clear selected files in UI
+    } else {
+      setMessage(`❌ Upload error: ${res.data?.message || "Unknown error"}`);
     }
-  };
+  } catch (err) {
+    console.error("❌ Upload failed:", err);
+    setMessage("❌ Upload failed. Check console for details.");
+  } finally {
+    setUploading(false);
+  }
+};
+
 
   return (
     <div className="p-6">
@@ -172,13 +202,14 @@ export default function Upload() {
             Choose Files
           </label>
           <input
-            id="file-upload"
-            type="file"
-            accept=".pdf"
-            multiple
-            onChange={handleFileSelect}
-            className="hidden"
+          id="file-upload"
+          type="file"
+          accept=".pdf,.png,.jpg,.jpeg,.webp,.bmp,.tiff,application/pdf,image/*"
+          multiple
+          onChange={handleFileSelect}
+          className="hidden"
           />
+
         </div>
 
         {/* File List */}

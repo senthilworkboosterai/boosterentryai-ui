@@ -4,8 +4,8 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Monitoring from "./pages/Monitoring";
 import HumanReview from "./pages/HumanReview";
-import Login from "./pages/Login";
 import FixReview from "./pages/FixReview";
+import InvoiceView from "./pages/invoiceview";
 
 export default function App() {
   return (
@@ -18,14 +18,12 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/monitoring" element={<Monitoring />} />
-        <Route path="/Human-review" element={<HumanReview />} />
-       
-
+        <Route path="/human-review" element={<HumanReview />} />
       </Route>
 
-      {/* Optional login page */}
+      {/* ❌ Outside layout — no sidebar */}
       <Route path="/human-review/fix/:id" element={<FixReview />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/invoice/:id" element={<InvoiceView />} />
     </Routes>
   );
 }
