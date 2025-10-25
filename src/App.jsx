@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
+import Login from "./pages/Login"; // ✅ Add this line
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Monitoring from "./pages/Monitoring";
@@ -10,10 +11,14 @@ import InvoiceView from "./pages/invoiceview";
 export default function App() {
   return (
     <Routes>
-      {/* Default route → go to dashboard */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-      {/* All dashboard pages use shared layout */}
+      {/* ✅ Default route → Login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* ✅ Login route (no sidebar layout) */}
+      <Route path="/login" element={<Login />} />
+
+      {/* ✅ Protected pages later */}
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<Upload />} />
@@ -21,9 +26,10 @@ export default function App() {
         <Route path="/human-review" element={<HumanReview />} />
       </Route>
 
-      {/* ❌ Outside layout — no sidebar */}
+      {/* ❌ Outside layout */}
       <Route path="/human-review/fix/:id" element={<FixReview />} />
       <Route path="/invoice/:id" element={<InvoiceView />} />
+
     </Routes>
   );
 }

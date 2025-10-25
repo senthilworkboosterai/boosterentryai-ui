@@ -55,7 +55,7 @@ export default function DashboardLayout() {
               <Menu size={22} />
             </button>
             <h2 className="text-lg font-semibold text-gray-700">
-              Dashboard Overview
+              KSS Roadways
             </h2>
           </div>
           <button className="flex items-center gap-2 text-gray-600 hover:text-indigo-700 transition">

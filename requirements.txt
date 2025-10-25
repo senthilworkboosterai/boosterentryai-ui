@@ -18,6 +18,9 @@ requests==2.32.3
 
 pillow
 
+bcrypt
+
+
 ########################################
 # ⚛️ FRONTEND DEPENDENCIES (Node / React)
 # Run these commands inside:

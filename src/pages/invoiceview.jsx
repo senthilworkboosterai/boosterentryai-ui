@@ -5,7 +5,7 @@ import api from "../api/axios";
 export default function InvoiceView() {
   const { id } = useParams();
   const [doc, setDoc] = useState(null);
-  const [jsonData, setJsonData] = useState({});
+  const [jsonData, setJsonData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -20,12 +20,8 @@ export default function InvoiceView() {
         const data = res.data.data;
         setDoc(data.doc);
 
-        const preferred =
-          data.corrected_data && Object.keys(data.corrected_data).length > 0
-            ? data.corrected_data
-            : data.extracted_data;
-
-        setJsonData(preferred || {});
+        // ✅ Directly set extracted_data (array of { field, value })
+        setJsonData(data.extracted_data || []);
       } catch (err) {
         console.error("❌ Error loading doc:", err);
         setError("Failed to load document details.");
@@ -55,7 +51,8 @@ export default function InvoiceView() {
         No document found.
       </div>
     );
-    console.log("📂 File URL:", doc?.file_url);
+
+  console.log("📂 File URL:", doc?.file_url);
 
   const StatusBadge = ({ label, status }) => {
     let color =
@@ -87,7 +84,10 @@ export default function InvoiceView() {
         </div>
 
         <div className="flex gap-3 mt-3 md:mt-0">
-          <StatusBadge label="Data Extraction" status={doc.data_extraction_status} />
+          <StatusBadge
+            label="Data Extraction"
+            status={doc.data_extraction_status}
+          />
           <StatusBadge label="ERP Entry" status={doc.erp_entry_status} />
         </div>
       </div>
@@ -118,16 +118,17 @@ export default function InvoiceView() {
             Extracted Data
           </h3>
 
-          {Object.keys(jsonData).length === 0 ? (
+          {/* ✅ Updated Rendering Logic */}
+          {(!jsonData || jsonData.length === 0) ? (
             <p className="text-gray-500 text-sm italic text-center">
               No extracted data available.
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {Object.entries(jsonData).map(([key, value]) => (
-                <div key={key}>
+              {jsonData.map(({ field, value }, index) => (
+                <div key={index}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {key}
+                    {field}
                   </label>
                   <input
                     type="text"

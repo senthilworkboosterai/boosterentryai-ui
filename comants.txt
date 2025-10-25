@@ -42,3 +42,4 @@ docker load -i boosterentryai_latest.tar
 
 cd /etc/nginx/sites-enabled
 
+docker save -o boosterentryai.tar boosterentryai:latest

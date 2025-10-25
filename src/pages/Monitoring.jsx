@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffet, useState } from "react";
 import api from "../api/axios";
 
 export default function Monitoring() {

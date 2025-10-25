@@ -5,7 +5,9 @@ import json, traceback
 
 monitoring_bp = Blueprint("monitoring_bp", __name__)
 
+# ==========================================================
 # ✅ API 1: Fetch Monitoring Table Data
+# ==========================================================
 @monitoring_bp.route("/api/monitoring", methods=["GET"])
 def get_monitoring_data():
     conn = None
@@ -86,7 +88,9 @@ def get_monitoring_data():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+# ==========================================================
 # ✅ API 2: Fetch Single Document Details (PDF + Extracted JSON)
+# ==========================================================
 @monitoring_bp.route("/api/monitoring/<int:doc_id>", methods=["GET"])
 def get_monitoring_doc_details(doc_id):
     conn = None
@@ -129,6 +133,7 @@ def get_monitoring_doc_details(doc_id):
             erp_entry_status
         ) = row
 
+        # Helper to safely parse JSON
         def parse_json(data):
             if not data:
                 return {}
@@ -144,12 +149,46 @@ def get_monitoring_doc_details(doc_id):
         if "final_data" in display_data:
             display_data = display_data["final_data"]
 
+        # ======================================================
+        # ✅ Clean unwanted keys and enforce custom order
+        # ======================================================
+        ordered_fields = [
+            "Branch", "Date", "ConsignmentNo", "Source", "Destination", "Vehicle",
+            "EWayBillNo", "Consignor", "Consignee", "GSTType", "Delivery Address",
+            "Invoice No", "ContentName", "ActualWeight", "E-WayBill ValidUpto",
+            "Invoice Date", "E-Way Bill Date", "Get Rate", "GoodsType"
+        ]
+
+        # Remove ValidationStatus entirely
+        if "ValidationStatus" in display_data:
+            display_data.pop("ValidationStatus", None)
+
+        # Remove the duplicate "E-Way Bill NO" if both exist
+        if "E-Way Bill NO" in display_data and "EWayBillNo" in display_data:
+            display_data.pop("E-Way Bill NO", None)
+
+        # Build ordered array for React
+        ordered_data = []
+        for key in ordered_fields:
+            if key in display_data:
+                ordered_data.append({"field": key, "value": display_data[key]})
+
+        # Final cleaned output
+        display_data = ordered_data
+
+        # ======================================================
+        # ✅ Build full PDF URL
+        # ======================================================
         base_url = request.host_url.rstrip("/")
         if base_url.endswith("/app"):
             base_url = base_url[:-4]  # remove '/app'
         pdf_url = f"{base_url}/uploaded_docs/{file_name}"
+
         release_connection(conn)
 
+        # ======================================================
+        # ✅ Return Final Response
+        # ======================================================
         return jsonify({
             "status": "success",
             "data": {

@@ -191,9 +191,9 @@ const isAllowedFile = (file) => ALLOWED_TYPES.includes(file.type);
           }`}
         >
           <p className="text-gray-600">
-            {isDragging ? "Release to upload files" : "Drag and drop PDFs here"}
+            {isDragging ? "Release to upload files" : "Drag and drop one or more invoices here"}
           </p>
-          <p className="text-sm text-gray-500 mt-1">or click below</p>
+          <p className="text-sm text-gray-500 mt-1">JPG, PNG, or PDF files supported</p>
 
           <label
             htmlFor="file-upload"
