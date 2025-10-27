@@ -1,70 +1,103 @@
-import { Outlet, Link } from "react-router-dom";
-import { LayoutDashboard, Upload, Monitor, FileCheck, LogOut, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { LogOut, LayoutDashboard, Upload, Monitor, ClipboardCheck } from "lucide-react";
 
 export default function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const menuItems = [
-    { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/dashboard" },
-    { name: "Upload", icon: <Upload size={18} />, path: "/upload" },
-    { name: "Monitoring", icon: <Monitor size={18} />, path: "/monitoring" },
-    { name: "Human Review", icon: <FileCheck size={18} />, path: "/human-review" },
-  ];
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    navigate("/login");
+  };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-indigo-700 text-white transform ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0`}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-indigo-500">
-          <h1 className="text-xl font-bold">BoosterEntryAI</h1>
-          <button
-            className="md:hidden text-white"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X size={22} />
-          </button>
+    <div className="flex min-h-screen bg-gray-50">
+      {/* ================== SIDEBAR ================== */}
+      <aside className="w-64 bg-[#3B29D9] text-white flex flex-col">
+        {/* Brand Title - Centered and smaller */}
+        <div className="text-center py-4 border-b border-indigo-500/25 shadow-sm">
+          <h1 className="text-[20px] font-semibold text-white tracking-wide">
+            BoosterEntryAI
+          </h1>
         </div>
 
-        <nav className="mt-6 space-y-1">
-          {menuItems.map((item) => (
-            <Link
-              key={item.name}
-              to={item.path}
-              className="flex items-center gap-3 px-6 py-2 hover:bg-indigo-600 transition rounded-md"
-            >
-              {item.icon}
-              <span>{item.name}</span>
-            </Link>
-          ))}
-        </nav>
-      </div>
+        {/* Nav Links */}
+        <nav className="flex flex-col space-y-1 px-3 mt-3">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg text-[15px] transition ${
+                isActive
+                  ? "bg-[#5243F3] text-white font-semibold"
+                  : "text-indigo-100 hover:bg-[#5243F3] hover:text-white"
+              }`
+            }
+          >
+            <LayoutDashboard size={18} />
+            Dashboard
+          </NavLink>
 
-      {/* Main Content */}
-      <div className="flex flex-col flex-1">
-        <header className="flex items-center justify-between px-6 py-3 bg-white shadow-md">
-          <div className="flex items-center gap-3">
-            <button
-              className="md:hidden text-indigo-700"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              <Menu size={22} />
-            </button>
-            <h2 className="text-lg font-semibold text-gray-700">
-              KSS Roadways
-            </h2>
-          </div>
-          <button className="flex items-center gap-2 text-gray-600 hover:text-indigo-700 transition">
-            <LogOut size={18} />
-            Logout
+          <NavLink
+            to="/upload"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg text-[15px] transition ${
+                isActive
+                  ? "bg-[#5243F3] text-white font-semibold"
+                  : "text-indigo-100 hover:bg-[#5243F3] hover:text-white"
+              }`
+            }
+          >
+            <Upload size={18} />
+            Upload
+          </NavLink>
+
+          <NavLink
+            to="/monitoring"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg text-[15px] transition ${
+                isActive
+                  ? "bg-[#5243F3] text-white font-semibold"
+                  : "text-indigo-100 hover:bg-[#5243F3] hover:text-white"
+              }`
+            }
+          >
+            <Monitor size={18} />
+            Monitoring
+          </NavLink>
+
+          <NavLink
+            to="/human-review"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg text-[15px] transition ${
+                isActive
+                  ? "bg-[#5243F3] text-white font-semibold"
+                  : "text-indigo-100 hover:bg-[#5243F3] hover:text-white"
+              }`
+            }
+          >
+            <ClipboardCheck size={18} />
+            Human Review
+          </NavLink>
+        </nav>
+      </aside>
+
+      {/* ================== MAIN CONTENT ================== */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-white shadow-sm flex justify-between items-center px-8 py-3">
+          <h2 className="text-[18px] font-medium text-gray-800 tracking-wide">
+            KSS Roadways
+          </h2>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition"
+          >
+            <LogOut size={18} strokeWidth={1.5} />
+            <span className="text-[15px] font-medium">Logout</span>
           </button>
         </header>
 
-        {/* Main Outlet (child routes render here) */}
+        {/* Page content */}
         <main className="flex-1 p-6 overflow-y-auto">
           <Outlet />
         </main>

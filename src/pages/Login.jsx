@@ -30,6 +30,7 @@ export default function Login() {
         body: JSON.stringify({ email: email.trim(), password }),
       });
 
+
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.message || "Invalid email or password");
@@ -39,6 +40,8 @@ export default function Login() {
       // const data = await res.json();
       // localStorage.setItem("auth", JSON.stringify(data));
       await res.json().catch(() => ({})); // consume
+      // ✅ store login status
+    localStorage.setItem("isLoggedIn", "true");  
 
       navigate(redirectTo, { replace: true });
     } catch (err) {

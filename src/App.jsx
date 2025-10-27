@@ -1,35 +1,55 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
-import Login from "./pages/Login"; // ✅ Add this line
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Monitoring from "./pages/Monitoring";
 import HumanReview from "./pages/HumanReview";
 import FixReview from "./pages/FixReview";
 import InvoiceView from "./pages/invoiceview";
+import ProtectedRoute from "./components/ProtectedRoute"; // ✅ correct import path
 
 export default function App() {
   return (
     <Routes>
-
-      {/* ✅ Default route → Login */}
+      {/* Public routes */}
       <Route path="/" element={<Navigate to="/login" replace />} />
-
-      {/* ✅ Login route (no sidebar layout) */}
       <Route path="/login" element={<Login />} />
 
-      {/* ✅ Protected pages later */}
-      <Route element={<DashboardLayout />}>
+      {/* ✅ All protected routes inside this wrapper */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/monitoring" element={<Monitoring />} />
         <Route path="/human-review" element={<HumanReview />} />
       </Route>
 
-      {/* ❌ Outside layout */}
-      <Route path="/human-review/fix/:id" element={<FixReview />} />
-      <Route path="/invoice/:id" element={<InvoiceView />} />
+      {/* ✅ Protected pages without layout */}
+      <Route
+        path="/human-review/fix/:id"
+        element={
+          <ProtectedRoute>
+            <FixReview />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/invoice/:id"
+        element={
+          <ProtectedRoute>
+            <InvoiceView />
+          </ProtectedRoute>
+        }
+      />
 
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
